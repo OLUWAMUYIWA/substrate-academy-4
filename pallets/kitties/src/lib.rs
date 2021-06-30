@@ -88,29 +88,33 @@ decl_module! {
         /// Breed kitties
         #[weight = 1000]
         pub fn breed(origin, kitty_id_1: u32, kitty_id_2: u32) {
+            //Checks First
+            //ensure sender is signed
             let sender = ensure_signed(origin)?;
+            //ensure both kitty ids supplied are valid
             let kitty1 = Self::kitties(&sender, kitty_id_1).ok_or(Error::<T>::InvalidKittyId)?;
             let kitty2 = Self::kitties(&sender, kitty_id_2).ok_or(Error::<T>::InvalidKittyId)?;
 
+            //ensure sender is not receiver
             ensure!(kitty1.gender() != kitty2.gender(), Error::<T>::SameGender);
 
             let kitty_id = Self::get_next_kitty_id()?;
 
-            let kitty1_dna = kitty1.0;
-            let kitty2_dna = kitty2.0;
+            let (kitty1_dna, kitty2_dna) = (kitty1.0, kitty2.0);
 
             let selector = Self::random_value(&sender);
+            //create new kitty dna
             let mut new_dna = [0u8; 16];
 
             // Combine parents and selector to create new kitty
             for i in 0..kitty1_dna.len() {
                 new_dna[i] = combine_dna(kitty1_dna[i], kitty2_dna[i], selector[i]);
             }
-
+            //new kitty from dna
             let new_kitty = Kitty(new_dna);
-
+            //Now insert into map
             Kitties::<T>::insert(&sender, kitty_id, &new_kitty);
-
+            //tell the listening world
             Self::deposit_event(RawEvent::KittyBred(sender, kitty_id, new_kitty));
         }
     }

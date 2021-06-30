@@ -15,7 +15,7 @@ sp-io = { version = "3.0.0", default-features = false }
 [dev-dependencies]
 serde = { version = "1.0.119" }
 sp-runtime = { version = "3.0.0" }
-
+sp-core = { version = "3.0.0" }
 [features]
 default = ["std"]
 std = [
